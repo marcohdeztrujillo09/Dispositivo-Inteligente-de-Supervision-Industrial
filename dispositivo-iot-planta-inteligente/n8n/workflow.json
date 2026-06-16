@@ -1,0 +1,556 @@
+{
+  "name": "Práctica X",
+  "nodes": [
+    {
+      "parameters": {
+        "topics": "estacion/datos",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mqttTrigger",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -16
+      ],
+      "id": "3d3edd06-f4c4-4084-8bac-34fd40290e39",
+      "name": "MQTT Trigger",
+      "credentials": {
+        "mqtt": {
+          "id": "H3uc1HzmBw20BRhb",
+          "name": "MQTT account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const data = JSON.parse(item.json.message);\n\n  return {\n    json: {\n      ...data,\n      timestamp: new Date()\n        .toISOString()\n        .replace(\"T\", \" \")\n        .split(\".\")[0]\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        -16
+      ],
+      "id": "fd760c3b-2016-4e54-87df-f3e1943896e6",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "775e00a8-b08c-4a13-be42-61b2d24a07f8",
+              "leftValue": "={{$json.temp}}",
+              "rightValue": 32,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "65cee681-628d-4b14-823f-484fca243341",
+              "leftValue": "={{$json.db}}",
+              "rightValue": 30,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "cba4326d-50ac-4a1d-85f0-bcae3087669f",
+              "leftValue": "={{$json.gas_adc}}",
+              "rightValue": 1300,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "0d8f3f83-5080-48a1-b9b5-b36a54ecf187",
+              "leftValue": "={{ $json.lux }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        384,
+        -16
+      ],
+      "id": "4cc482ed-dd27-4e08-a9b3-e9d1289b2c1f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n\n  let text = item.json.text || \"\";\n\n  // eliminar reasoning típico\n  text = text\n    .replace(/Okay,.*?\\n/gi, \"\")\n    .replace(/Let's.*?\\n/gi, \"\")\n    .replace(/I think.*?\\n/gi, \"\")\n    .replace(/The user wants.*?\\n/gi, \"\");\n\n  // cortar desde \"Riesgo:\"\n  const start = text.indexOf(\"Riesgo:\");\n\n  if (start !== -1) {\n    text = text.substring(start);\n  }\n\n  return {\n    json: {\n      ...item.json,\n      ai_response: text.trim()\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1168,
+        -288
+      ],
+      "id": "1a044cda-c83c-4389-98a8-a8882337a0f8",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Xc2g_Gh_5ETW3xtEQHd_wLUtWPy6GBYE403N093PHWo",
+          "mode": "list",
+          "cachedResultName": "Estación de sensores",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Xc2g_Gh_5ETW3xtEQHd_wLUtWPy6GBYE403N093PHWo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Xc2g_Gh_5ETW3xtEQHd_wLUtWPy6GBYE403N093PHWo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $json.timestamp }}",
+            "hum": "={{ $json.hum }}",
+            "temp": "={{ $json.temp }}",
+            "pres": "={{ $json.pres }}",
+            "gas": "={{ $json.gas_adc }}",
+            "lux": "={{ $json.lux }}",
+            "db": "={{ $json.db }}",
+            "estado": "NORMAL"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "temp",
+              "displayName": "temp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hum",
+              "displayName": "hum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pres",
+              "displayName": "pres",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "db",
+              "displayName": "db",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "gas",
+              "displayName": "gas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lux",
+              "displayName": "lux",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        624,
+        96
+      ],
+      "id": "d61d4c70-a739-4c0b-92f0-80d0ebd189f4",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jgyXG2lfP1tNLXuh",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let alerta = \"\";\n\nif ($json.temp > 32) {\n  alerta = \"Temperatura elevada\";\n}\nelse if ($json.db > 29) {\n  alerta = \"Ruido elevado\";\n}\nelse if ($json.gas_adc > 1300) {\n  alerta = \"Gas anómalo\";\n}\nelse if ($json.lux < 10) {\n  alerta = \"Luminosidad baja\";\n}\n\nreturn {\n  json: {\n    ...$json,\n    alerta\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -128
+      ],
+      "id": "37ec642b-b330-4f60-b582-9a83110a2648",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "chatId": "804064760",
+        "text": "=🚨 ALERTA INDUSTRIAL\n\n📊 ESTADO DEL SISTEMA\n\nTemperatura: {{ $('Code in JavaScript2').item.json.temp }} °C  \nHumedad: {{ $('Code in JavaScript2').item.json.hum }} %  \nGas ADC: {{ $('Code in JavaScript2').item.json.gas_adc }}  \nRuido: {{ $('Code in JavaScript2').item.json.db }}  \nLux: {{ $('Code in JavaScript2').item.json.lux }}  \nPresión: {{ $('Code in JavaScript2').item.json.pres }}\n\n⚠️ ANOMALÍA DETECTADA\n{{ $('Code in JavaScript2').item.json.alerta }}\n\n🧠 DIAGNÓSTICO IA\n{{ $json.ai_response }}\n\n⏱ Hora: {{ $('Code in JavaScript2').item.json.timestamp }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1360,
+        -288
+      ],
+      "id": "63cd10a0-94df-407f-a03d-1d5faaa6287a",
+      "name": "Send a text message",
+      "webhookId": "3209ad3a-389c-4c30-a80b-4795e98b42aa",
+      "credentials": {
+        "telegramApi": {
+          "id": "K6cUxqnyBoRNpqkj",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Eres un sistema industrial de generación de informes técnicos.\n\nIDIOMA OBLIGATORIO:\n- Responde SIEMPRE en español técnico.\n- Prohibido cualquier palabra en inglés.\n- Prohibido razonamiento interno en cualquier idioma.\n\nESTILO:\n- Español técnico formal.\n- Ortografía perfecta con tildes correctas.\n- Terminología consistente: diagnóstico, riesgo, causas, recomendaciones, conclusión.\n- Redacción clara, profesional y sin redundancia.\n\nPROHIBIDO:\n- Inglés (ni palabras ni frases como \"okay\", \"let's\", \"I think\").\n- Explicaciones del proceso o pensamiento.\n- Texto introductorio tipo conversación.\n- Cualquier contenido fuera del informe.\n\nINSTRUCCIÓN:\n/no_think\n\nSALIDA OBLIGATORIA:\nDevuelve SOLO el informe final con esta estructura exacta:\n\n1. Diagnóstico\n2. Riesgo\n3. Causas\n4. Recomendaciones\n5. Conclusión\n\nDATOS:\n\nTemperatura: {{ $json.temp }} °C  \nHumedad: {{ $json.hum }} %  \nPresión: {{ $json.pres }}  \nGas ADC: {{ $json.gas_adc }}  \nRuido: {{ $json.db }}  \nLux: {{ $json.lux }}  \n\nAlerta detectada:\n{{ $json.alerta }}",
+        "messages": {
+          "messageValues": []
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        848,
+        0
+      ],
+      "id": "3259fd86-5dc6-485f-b82a-b566d7ef4861",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "qwen3:1.7b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        928,
+        192
+      ],
+      "id": "6c6c71e3-f63d-4173-b665-875985eff45d",
+      "name": "Ollama Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "3jB6MGZH3THvRQ2Z",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n\n  let text = item.json.text || item.json.response || \"\";\n\n  // quitar bloques típicos de reasoning\n  text = text\n    .replace(/Okay.*?\\n/gi, \"\")\n    .replace(/Let's.*?\\n/gi, \"\")\n    .replace(/I think.*?\\n/gi, \"\")\n    .replace(/The user wants.*?\\n/gi, \"\");\n\n  // intentar quedarnos solo con el informe\n  const start = text.indexOf(\"1. Diagnóstico\");\n\n  if (start !== -1) {\n    text = text.substring(start);\n  }\n\n  return {\n    json: {\n      clean_report: text\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "06fffa71-62b6-4a55-bb5f-c175535bd302",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "sendTo": "marcohdeztrujillo09@gmail.com",
+        "subject": "Informe Industrial ESP32",
+        "message": "=<h1 style=\"color:#c62828;\">\nINFORME INDUSTRIAL AUTOMÁTICO\n</h1>\n\n<h2>Estado del sistema</h2>\n\n<table border=\"1\" cellpadding=\"8\" cellspacing=\"0\" style=\"border-collapse: collapse; width: 100%;\">\n<tr>\n<td><b>Temperatura</b></td>\n<td>{{ $('Code in JavaScript2').item.json.temp }} °C</td>\n</tr>\n\n<tr>\n<td><b>Humedad</b></td>\n<td>{{ $('Code in JavaScript2').item.json.hum }} %</td>\n</tr>\n\n<tr>\n<td><b>Gas ADC</b></td>\n<td>{{ $('Code in JavaScript2').item.json.gas_adc }}</td>\n</tr>\n\n<tr>\n<td><b>Ruido</b></td>\n<td>{{ $('Code in JavaScript2').item.json.db }} dB</td>\n</tr>\n\n<tr>\n<td><b>Lux</b></td>\n<td>{{ $('Code in JavaScript2').item.json.lux }}</td>\n</tr>\n\n<tr>\n<td><b>Presión</b></td>\n<td>{{ $('Code in JavaScript2').item.json.pres }}</td>\n</tr>\n\n<tr>\n<td><b>Fecha</b></td>\n<td>{{ $('Code in JavaScript2').item.json.timestamp }}</td>\n</tr>\n</table>\n\n<h2 style=\"color:#b71c1c;\">\nALERTA DETECTADA\n</h2>\n\n<p>\n{{ $('Code in JavaScript2').item.json.alerta }}\n</p>\n\n<h2>\nINFORME IA\n</h2>\n\n<pre style=\"\nbackground:#f5f5f5;\npadding:15px;\nborder-radius:10px;\nwhite-space:pre-wrap;\n\">\n{{ $json.clean_report }}\n</pre>\n\n<hr>\n\n<p style=\"font-size:12px;color:gray;\">\nSistema automático ESP32 + IA + n8n\n</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1360,
+        0
+      ],
+      "id": "f7939e4a-5c0e-4a98-92ec-e1990fb80791",
+      "name": "Send a message",
+      "webhookId": "196006ba-af6f-408e-92b8-67f26ae0956e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "z28E4NL61bb8Wxv0",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Eres un sistema industrial IoT.\n\nNO PIENSES.\nNO EXPLIQUES TU RAZONAMIENTO.\nNO MUESTRES ANÁLISIS INTERNO.\nNO USES INGLÉS.\nRESPONDE SOLO EN ESPAÑOL.\n\nNo inventes anomalías.\nSé breve y técnico.\nMáximo 4 líneas.\n\nValores normales:\n\n- Temp: 20-29\n- Humedad: 50-75\n- Gas ADC: 850-1200\n- dB: 15-29\n- Lux: 30-1000\n\nAnomalía detectada:\n{{ $json.alerta }}\n\nSensores:\n\n- Temp: {{ $json.temp }}\n- Humedad: {{ $json.hum }}\n- Gas: {{ $json.gas_adc }}\n- dB: {{ $json.db }}\n- Lux: {{ $json.lux }}\n\nRESPONDE SOLO CON ESTE FORMATO:\n\nRiesgo:\nCausa:\nAcción:",
+        "messages": {
+          "messageValues": []
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        848,
+        -288
+      ],
+      "id": "39f81d1e-aa0c-4584-b36f-708ec502567c",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "model": "qwen3:1.7b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -128
+      ],
+      "id": "9f2a7f31-a5f5-4b76-a97f-8eb6cfac71ad",
+      "name": "Ollama Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "3jB6MGZH3THvRQ2Z",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://influxdb:8086/api/v2/write?org=ProyectoIoT&bucket=estacion_sensores&precision=s",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "text/plain",
+        "body": "=lecturas_esp32,dispositivo=ESP32_Estacion1 temp={{ $json.temp }},hum={{ $json.hum }},gas={{ $json.gas_adc }},ruido={{ $json.db }},lux={{ $json.lux }},pres={{ $json.pres }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        384,
+        208
+      ],
+      "id": "9d670c63-7bb0-48ae-8f3d-1ccad121ed00",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "cHbDEGDfql4POzed",
+          "name": "Header Auth account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "MQTT Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        []
+      ]
+    },
+    "Ollama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b2fc17e1-59ac-4673-be9e-bc1983d3291a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "20a1adc97cdaffd69797fc8f845eea0b7191e0082b41bb4756690eb9f0b22b4c"
+  },
+  "id": "M4ifRdFR3z3WdV7S",
+  "tags": []
+}
