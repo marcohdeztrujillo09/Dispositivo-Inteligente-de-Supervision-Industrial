@@ -43,7 +43,6 @@ Este proyecto está estructurado de forma modular para facilitar su replicación
 │   ├── 📁 data/                # Datos persistentes — ignorado en Git
 │   └── 📁 log/                 # Registros de actividad — ignorado en Git
 ├── 📄 docker-compose.yml       # Orquestación de infraestructura local (Docker)
-└── 📄 .gitignore               # Filtro para evitar subir credenciales o datos locales
 ```
 
 ---
