@@ -218,7 +218,7 @@ El modelo utilizado es `qwen3:1.7b` ejecutado localmente con **Ollama**, sin con
 Con datos cada 5 segundos, una anomalía persistente genera mensajes continuos en Telegram y correos repetidos. Se contempla implementar un sistema de **cooldown** (bloqueo temporal entre alertas de 1-5 minutos) mediante un nodo de espera en n8n.
 
 **Mejoras planificadas**
-- Implementar el cooldown para reducir la saturación de notificaciones.
+- Implementar el cooldown para reducir la saturación de notificaciones constantes.
 - Añadir más sensores o tipos de variables.
 - Usar modelos LLM locales más avanzados si el hardware lo permite.
 - Expandir los dashboards de Grafana con análisis predictivo basado en el histórico de InfluxDB.
